@@ -4,3 +4,5 @@ __pycache__/
 data/raw/*.xlsx
 !data/raw/sample_*.xlsx
 ~$*.xlsx
+# 생성된 대시보드 HTML (실데이터가 담길 수 있음)
+output/

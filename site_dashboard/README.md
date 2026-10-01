@@ -1,9 +1,9 @@
-# 현장 보고 대시보드 (v0.1)
+# 현장 보고 대시보드 (v0.3)
 
 월간 현장 보고 엑셀 템플릿을 읽어 임원 보고용 대시보드 데이터(JSON)로 변환한다.
 
 ```
-[입력] data/raw/*.xlsx  →  [처리] src/parse_report.py  →  [출력] data/processed/dashboard_data.json  →  (v0.3) 대시보드 HTML
+[입력] data/raw/*.xlsx  →  [처리] src/parse_report.py  →  [출력] output/dashboard_<보고월>.html
 ```
 
 > ⚠️ 이 레포에는 **더미 데이터만** 올린다. 실제 현장 파일은 `.gitignore`로 커밋이 차단된다(`sample_*.xlsx`만 허용).
@@ -35,12 +35,23 @@
 pip install -r requirements.txt
 python scripts/make_sample_template.py                     # 더미 템플릿 생성
 python src/parse_report.py data/raw/sample_report_2026-09.xlsx
+python src/build_dashboard.py data/raw/sample_report_2026-09.xlsx   # 대시보드 HTML 생성
 python -m pytest -q                                        # 테스트
 ```
+
+## 대시보드 (output/dashboard_<보고월>.html)
+
+파일 하나로 완결되며 인터넷 연결 없이 더블클릭으로 열린다. 사내 공유 드라이브에 올려 링크로 공유한다.
+
+- KPI 4종: 공정률(계획 대비), 예산 집행률(계획 대비), 미해결 리스크(등급별), 공기 경과율(기한초과 리스크)
+- 공정률·예산 집행 누계 추이: 마우스를 올리면 월별 값, 표 보기 지원
+- 집행률이 공정률보다 3%p 이상 높으면 원가 주의 문구 표시
+- 리스크 진행 현황: 상태별 막대, 미해결/전체/High/기한초과 필터, 미해결·기한초과·High 순 정렬
+- 다크 모드, 모바일, 인쇄 대응
 
 ## 로드맵
 
 - [x] v0.1 템플릿 정의 + 파서 + 검증 + 테스트
-- [ ] v0.3 대시보드 HTML (KPI 카드, S-Curve, 리스크 표)
+- [x] v0.3 대시보드 HTML (KPI 카드, 추이 차트, 리스크 표)
 - [ ] v0.4 GitHub Actions 자동 빌드 + GitHub Pages 배포
 - [ ] v1.0 전월 대비 증감, 이상치 하이라이트

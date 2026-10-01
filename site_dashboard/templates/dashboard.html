@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>현장 보고 대시보드</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --border: rgba(11, 11, 11, 0.10);
+    --s-actual: #2a78d6;
+    --s-plan: #eb6834;
+    --st-0: #86b6ef;
+    --st-1: #2a78d6;
+    --st-2: #104281;
+    --good: #006300;
+    --critical: #d03b3b;
+    --serious: #ec835a;
+    --warning: #fab219;
+    --chip: #f0efec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+      --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
+      --s-actual: #3987e5; --s-plan: #d95926;
+      --st-0: #184f95; --st-1: #3987e5; --st-2: #9ec5f4;
+      --good: #0ca30c; --chip: #2c2c2a;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
+    --s-actual: #3987e5; --s-plan: #d95926;
+    --st-0: #184f95; --st-1: #3987e5; --st-2: #9ec5f4;
+    --good: #0ca30c; --chip: #2c2c2a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font: 14px/1.5 system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+  }
+  main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
+  header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: flex-end; margin-bottom: 20px; }
+  h1 { font-size: 22px; margin: 0; }
+  .eyebrow { color: var(--ink-2); font-size: 13px; margin: 0 0 4px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--ink-2); font-size: 13px; }
+  .meta b { color: var(--ink); font-weight: 600; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+  .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .tile .label { color: var(--ink-2); font-size: 13px; }
+  .tile .value { font-size: 30px; font-weight: 600; line-height: 1.2; margin: 4px 0; }
+  .tile .value small { font-size: 15px; color: var(--ink-2); font-weight: 500; }
+  .tile .sub { font-size: 13px; color: var(--ink-2); }
+  .delta-bad { color: var(--critical); font-weight: 600; }
+  .delta-good { color: var(--good); font-weight: 600; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+  h2 { font-size: 15px; margin: 0 0 2px; }
+  .card .desc { color: var(--ink-2); font-size: 13px; margin: 0 0 10px; }
+  .legend { display: flex; gap: 16px; font-size: 13px; color: var(--ink-2); margin-bottom: 4px; }
+  .legend i { display: inline-block; width: 14px; height: 2px; vertical-align: middle; margin-right: 6px; border-radius: 1px; }
+  .legend i.box { height: 10px; width: 10px; border-radius: 2px; }
+  .chart { position: relative; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .chart text.end { fill: var(--ink); font-size: 12px; font-weight: 600; }
+  .tip {
+    position: absolute; pointer-events: none; opacity: 0; transition: opacity .1s;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.12); white-space: nowrap; z-index: 2;
+  }
+  .tip .t { color: var(--ink-2); margin-bottom: 2px; }
+  .tip .r { display: flex; align-items: center; gap: 6px; }
+  .tip .r i { width: 12px; height: 2px; display: inline-block; }
+  .tip .r b { font-variant-numeric: tabular-nums; }
+  .insight { margin-top: 8px; font-size: 13px; padding: 8px 10px; background: var(--chip); border-radius: 8px; }
+  details { margin-top: 8px; font-size: 13px; color: var(--ink-2); }
+  details summary { cursor: pointer; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+  th { color: var(--ink-2); font-weight: 500; white-space: nowrap; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .scroll { overflow-x: auto; }
+  .stackbar { display: flex; gap: 2px; height: 28px; margin: 6px 0 8px; }
+  .stackbar div { border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; min-width: 28px; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .badge i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--chip); font-size: 12px; white-space: nowrap; }
+  .overdue { color: var(--critical); font-weight: 600; white-space: nowrap; }
+  tr.done td { color: var(--muted); }
+  #risk-table { min-width: 760px; }
+  #risk-table td:first-child { white-space: nowrap; }
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .filters button {
+    font: inherit; font-size: 12px; padding: 3px 10px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--border); background: transparent; color: var(--ink-2);
+  }
+  .filters button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+  footer { margin-top: 16px; color: var(--muted); font-size: 12px; }
+  @media (max-width: 860px) {
+    .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid2 { grid-template-columns: 1fr; }
+  }
+  @media print { body { background: #fff; } .filters, details { display: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <p class="eyebrow" id="eyebrow"></p>
+      <h1 id="site-name"></h1>
+    </div>
+    <div class="meta" id="meta"></div>
+  </header>
+
+  <section class="tiles" id="tiles"></section>
+
+  <section class="grid2">
+    <div class="card">
+      <h2>공정률 추이 (누계)</h2>
+      <p class="desc">계획 대비 실적, 단위 %</p>
+      <div class="legend"><span><i style="background:var(--s-actual)"></i>실적</span><span><i style="background:var(--s-plan)"></i>계획</span></div>
+      <div class="chart" id="chart-progress"></div>
+      <details><summary>데이터 표 보기</summary><div class="scroll" id="table-progress"></div></details>
+    </div>
+    <div class="card">
+      <h2>예산 집행 추이 (누계)</h2>
+      <p class="desc" id="budget-desc"></p>
+      <div class="legend"><span><i style="background:var(--s-actual)"></i>실적</span><span><i style="background:var(--s-plan)"></i>계획</span></div>
+      <div class="chart" id="chart-budget"></div>
+      <details><summary>데이터 표 보기</summary><div class="scroll" id="table-budget"></div></details>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>리스크 진행 현황</h2>
+    <p class="desc" id="risk-desc"></p>
+    <div class="legend" id="status-legend"></div>
+    <div class="stackbar" id="stackbar"></div>
+    <div class="filters" id="filters"></div>
+    <div class="scroll"><table id="risk-table"></table></div>
+  </section>
+
+  <footer id="footer"></footer>
+</main>
+
+<script id="dashboard-data" type="application/json">/*__DATA__*/</script>
+<script>
+(function () {
+  const D = JSON.parse(document.getElementById("dashboard-data").textContent);
+  const $ = (id) => document.getElementById(id);
+  const fmt = (n, d = 1) => Number(n).toLocaleString("ko-KR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const el = (tag, attrs = {}, text) => {
+    const e = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    if (text !== undefined) e.textContent = text;
+    return e;
+  };
+  const SVG = "http://www.w3.org/2000/svg";
+  const svgEl = (tag, attrs = {}) => {
+    const e = document.createElementNS(SVG, tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    return e;
+  };
+
+  // ---------- 헤더 ----------
+  const s = D.site;
+  $("eyebrow").textContent = `${D.meta.report_month.replace("-", "년 ")}월 현장 보고`;
+  $("site-name").textContent = s["현장명"];
+  const start = new Date(s["공사기간_시작"]), end = new Date(s["공사기간_종료"]);
+  const [y, m] = D.meta.report_month.split("-").map(Number);
+  const monthEnd = new Date(y, m, 0);
+  const elapsed = Math.min(100, Math.max(0, (monthEnd - start) / (end - start) * 100));
+  [["발주처", s["발주처"]], ["현장소장", s["현장소장"]],
+   ["공사기간", `${s["공사기간_시작"]} ~ ${s["공사기간_종료"]}`],
+   ["계약금액", `${fmt(s["계약금액_억원"], 0)}억원`]].forEach(([k, v]) => {
+    if (v == null) return;
+    const span = el("span", {}, `${k} `);
+    span.appendChild(el("b", {}, v));
+    $("meta").appendChild(span);
+  });
+
+  // ---------- KPI 타일 ----------
+  const P = D.progress.latest, B = D.budget.latest, R = D.risks.summary;
+  const tile = (label, value, unit, subNodes) => {
+    const t = el("div", { class: "card tile" });
+    t.appendChild(el("div", { class: "label" }, label));
+    const v = el("div", { class: "value" }, value);
+    if (unit) v.appendChild(el("small", {}, unit));
+    t.appendChild(v);
+    const sub = el("div", { class: "sub" });
+    subNodes.forEach((n) => sub.appendChild(typeof n === "string" ? document.createTextNode(n) : n));
+    t.appendChild(sub);
+    $("tiles").appendChild(t);
+  };
+  const delta = (gap, higherIsGood, unit = "%p") => {
+    const good = higherIsGood ? gap >= 0 : gap <= 0;
+    const arrow = gap > 0 ? "▲" : gap < 0 ? "▼" : "–";
+    return el("span", { class: good ? "delta-good" : "delta-bad" }, `${arrow} ${fmt(Math.abs(gap))}${unit}`);
+  };
+  tile("공정률 (실적)", fmt(P.actual), "%", [`계획 ${fmt(P.plan)}% 대비 `, delta(P.gap, true)]);
+  tile("예산 집행률", fmt(B.actual_rate), "%",
+       [`계획 ${fmt(B.plan_rate)}% 대비 `, delta(B.actual_rate - B.plan_rate, false)]);
+  tile("미해결 리스크", String(R.open), "건",
+       [`High ${R.open_by_grade.High} · Medium ${R.open_by_grade.Medium} · Low ${R.open_by_grade.Low}`]);
+  tile("공기 경과율", fmt(elapsed), "%", [`기한초과 리스크 `, el("span", { class: R.overdue ? "delta-bad" : "delta-good" }, `${R.overdue}건`)]);
+
+  // ---------- 선 차트 (계획 vs 실적) ----------
+  function lineChart(host, series, opts) {
+    const W = 560, H = 260, M = { t: 12, r: 64, b: 28, l: 40 };
+    const iw = W - M.l - M.r, ih = H - M.t - M.b;
+    const n = series.length;
+    const maxV = opts.max ?? Math.max(...series.flatMap((d) => [d.plan, d.actual]));
+    const step = opts.tick ?? Math.ceil(maxV / 4 / 100) * 100;
+    const top = Math.ceil(maxV / step) * step;
+    const x = (i) => M.l + (n === 1 ? iw / 2 : (i / (n - 1)) * iw);
+    const yS = (v) => M.t + ih - (v / top) * ih;
+    const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": opts.aria });
+
+    for (let v = 0; v <= top; v += step) {
+      svg.appendChild(svgEl("line", { x1: M.l, x2: M.l + iw, y1: yS(v), y2: yS(v), stroke: v === 0 ? "var(--axis)" : "var(--grid)", "stroke-width": 1 }));
+      const t = svgEl("text", { x: M.l - 6, y: yS(v) + 4, "text-anchor": "end" });
+      t.textContent = v.toLocaleString("ko-KR");
+      svg.appendChild(t);
+    }
+    const every = Math.max(1, Math.ceil(n / 6));
+    series.forEach((d, i) => {
+      if (i % every && i !== n - 1) return;
+      const t = svgEl("text", { x: x(i), y: H - 8, "text-anchor": "middle" });
+      t.textContent = d.month.slice(2).replace("-", ".");
+      svg.appendChild(t);
+    });
+
+    const keys = [["plan", "var(--s-plan)", "계획"], ["actual", "var(--s-actual)", "실적"]];
+    keys.forEach(([k, c]) => {
+      const dAttr = series.map((d, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${yS(d[k]).toFixed(1)}`).join("");
+      svg.appendChild(svgEl("path", { d: dAttr, fill: "none", stroke: c, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+    });
+    // 끝점 마커 + 값 라벨 (충돌 시 간격 벌림)
+    const last = series[n - 1];
+    const ends = keys.map(([k, c]) => ({ k, c, y: yS(last[k]) }));
+    if (Math.abs(ends[0].y - ends[1].y) < 14) {
+      const hiIdx = ends[0].y < ends[1].y ? 0 : 1, mid = (ends[0].y + ends[1].y) / 2;
+      ends[hiIdx].ly = mid - 7; ends[1 - hiIdx].ly = mid + 7;
+    }
+    ends.forEach((e) => {
+      svg.appendChild(svgEl("circle", { cx: x(n - 1), cy: e.y, r: 4, fill: e.c, stroke: "var(--surface)", "stroke-width": 2 }));
+      const t = svgEl("text", { x: x(n - 1) + 8, y: (e.ly ?? e.y) + 4, class: "end" });
+      t.textContent = opts.label(last[e.k]);
+      svg.appendChild(t);
+    });
+
+    // 크로스헤어 + 툴팁
+    const cross = svgEl("line", { y1: M.t, y2: M.t + ih, stroke: "var(--axis)", "stroke-width": 1, visibility: "hidden" });
+    const dots = keys.map(([, c]) => svgEl("circle", { r: 4, fill: c, stroke: "var(--surface)", "stroke-width": 2, visibility: "hidden" }));
+    svg.appendChild(cross); dots.forEach((d) => svg.appendChild(d));
+    const hit = svgEl("rect", { x: M.l, y: M.t, width: iw, height: ih, fill: "transparent", tabindex: 0 });
+    svg.appendChild(hit);
+    host.appendChild(svg);
+    const tip = el("div", { class: "tip" });
+    host.appendChild(tip);
+
+    const show = (i) => {
+      const d = series[i];
+      cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
+      keys.forEach(([k], j) => { dots[j].setAttribute("cx", x(i)); dots[j].setAttribute("cy", yS(d[k])); dots[j].setAttribute("visibility", "visible"); });
+      tip.replaceChildren(el("div", { class: "t" }, d.month));
+      [...keys].reverse().forEach(([k, c, name]) => {
+        const r = el("div", { class: "r" });
+        const key = el("i"); key.style.background = c;
+        r.append(key, el("b", {}, opts.label(d[k])), el("span", {}, name));
+        tip.appendChild(r);
+      });
+      const gap = d.actual - d.plan;
+      tip.appendChild(el("div", { class: "t" }, `차이 ${gap >= 0 ? "+" : ""}${fmt(gap)}${opts.gapUnit}`));
+      const scale = host.clientWidth / W;
+      const px = x(i) * scale;
+      tip.style.left = `${Math.min(px + 12, host.clientWidth - tip.offsetWidth)}px`;
+      tip.style.top = `${M.t * scale}px`;
+      tip.style.opacity = 1;
+    };
+    const hide = () => { tip.style.opacity = 0; cross.setAttribute("visibility", "hidden"); dots.forEach((d) => d.setAttribute("visibility", "hidden")); };
+    hit.addEventListener("pointermove", (ev) => {
+      const r = svg.getBoundingClientRect();
+      const sx = (ev.clientX - r.left) * (W / r.width);
+      show(Math.max(0, Math.min(n - 1, Math.round(((sx - M.l) / iw) * (n - 1)))));
+    });
+    hit.addEventListener("pointerleave", hide);
+    let kbd = n - 1;
+    hit.addEventListener("focus", () => show(kbd));
+    hit.addEventListener("blur", hide);
+    hit.addEventListener("keydown", (ev) => {
+      if (ev.key === "ArrowLeft") kbd = Math.max(0, kbd - 1);
+      else if (ev.key === "ArrowRight") kbd = Math.min(n - 1, kbd + 1);
+      else return;
+      ev.preventDefault(); show(kbd);
+    });
+  }
+
+  function seriesTable(host, series, unit) {
+    const t = el("table");
+    const head = el("tr");
+    ["보고월", `계획 (${unit})`, `실적 (${unit})`, "차이"].forEach((h, i) => head.appendChild(el("th", i ? { class: "num" } : {}, h)));
+    t.appendChild(head);
+    [...series].reverse().forEach((d) => {
+      const tr = el("tr");
+      tr.append(el("td", {}, d.month), el("td", { class: "num" }, fmt(d.plan)), el("td", { class: "num" }, fmt(d.actual)),
+                el("td", { class: "num" }, `${d.actual - d.plan >= 0 ? "+" : ""}${fmt(d.actual - d.plan)}`));
+      t.appendChild(tr);
+    });
+    host.appendChild(t);
+  }
+
+  lineChart($("chart-progress"), D.progress.history, {
+    max: 100, tick: 25, label: (v) => `${fmt(v)}%`, gapUnit: "%p", aria: "공정률 계획 대비 실적 추이",
+  });
+  seriesTable($("table-progress"), D.progress.history, "%");
+
+  $("budget-desc").textContent = `계획 대비 실적, 단위 억원 · 실행예산 ${fmt(D.budget.total, 0)}억원`;
+  lineChart($("chart-budget"), D.budget.history, {
+    label: (v) => `${fmt(v, 0)}억`, gapUnit: "억원", aria: "예산 집행 계획 대비 실적 추이",
+  });
+  seriesTable($("table-budget"), D.budget.history, "억원");
+  const spread = B.actual_rate - P.actual;
+  if (Math.abs(spread) >= 3) {
+    const note = el("div", { class: "insight" });
+    note.append(el("b", {}, spread > 0 ? "⚠ 원가 주의 " : "ℹ 참고 "),
+      document.createTextNode(spread > 0
+        ? `예산 집행률(${fmt(B.actual_rate)}%)이 공정률(${fmt(P.actual)}%)보다 ${fmt(spread)}%p 높습니다. 기성 대비 원가 투입이 앞서 있습니다.`
+        : `예산 집행률(${fmt(B.actual_rate)}%)이 공정률(${fmt(P.actual)}%)보다 ${fmt(-spread)}%p 낮습니다.`));
+    $("chart-budget").after(note);
+  }
+
+  // ---------- 리스크 ----------
+  const STATUSES = ["미착수", "진행중", "완료"];
+  const ST_COLOR = { "미착수": "var(--st-0)", "진행중": "var(--st-1)", "완료": "var(--st-2)" };
+  const ST_INK = { "미착수": "var(--ink)", "진행중": "#ffffff", "완료": "var(--surface)" };
+  const GRADE = { High: ["var(--critical)", "▲"], Medium: ["var(--warning)", "■"], Low: ["var(--muted)", "●"] };
+  $("risk-desc").textContent = `전체 ${R.total}건 · 미해결 ${R.open}건 · 기한초과 ${R.overdue}건 · 등급 = 영향도 × 발생가능성`;
+  STATUSES.forEach((st) => {
+    const sp = el("span"); const i = el("i", { class: "box" }); i.style.background = ST_COLOR[st];
+    sp.append(i, document.createTextNode(`${st} ${R.by_status[st]}`));
+    $("status-legend").appendChild(sp);
+    if (!R.by_status[st]) return;
+    const seg = el("div", { title: `${st} ${R.by_status[st]}건` }, String(R.by_status[st]));
+    seg.style.flex = R.by_status[st]; seg.style.background = ST_COLOR[st]; seg.style.color = ST_INK[st];
+    $("stackbar").appendChild(seg);
+  });
+
+  const ORDER = { High: 0, Medium: 1, Low: 2 };
+  const items = [...D.risks.items].sort((a, b) =>
+    (a.status === "완료") - (b.status === "완료") || b.overdue - a.overdue || ORDER[a.grade] - ORDER[b.grade] || a.id.localeCompare(b.id));
+  const filters = [["미해결", (r) => r.status !== "완료"], ["전체", () => true], ["High", (r) => r.grade === "High"], ["기한초과", (r) => r.overdue]];
+  let active = 0;
+  const renderTable = () => {
+    const t = $("risk-table");
+    t.replaceChildren();
+    const head = el("tr");
+    ["ID", "등급", "리스크 항목", "분류", "담당", "조치계획", "상태", "목표일"].forEach((h) => head.appendChild(el("th", {}, h)));
+    t.appendChild(head);
+    const rows = items.filter(filters[active][1]);
+    if (!rows.length) {
+      const tr = el("tr"); tr.appendChild(el("td", { colspan: 8 }, "해당 항목이 없습니다.")); t.appendChild(tr);
+    }
+    rows.forEach((r) => {
+      const tr = el("tr", r.status === "완료" ? { class: "done" } : {});
+      const [gc, gi] = GRADE[r.grade];
+      const badge = el("span", { class: "badge", title: `영향도 ${r.impact} · 발생가능성 ${r.likelihood}` });
+      const dot = el("i"); dot.style.background = gc; dot.textContent = "";
+      badge.append(dot, document.createTextNode(`${gi} ${r.grade}`));
+      const gradeTd = el("td"); gradeTd.appendChild(badge);
+      const titleTd = el("td"); titleTd.appendChild(el("div", {}, r.title));
+      if (r.note) titleTd.appendChild(el("div", { style: "color:var(--muted);font-size:12px" }, r.note));
+      const dueTd = el("td", {}, r.due ?? "-");
+      if (r.overdue) { dueTd.replaceChildren(el("span", { class: "overdue" }, `⚠ ${r.due}`)); dueTd.appendChild(el("div", { style: "font-size:12px;color:var(--critical)" }, "기한초과")); }
+      const stTd = el("td"); stTd.appendChild(el("span", { class: "pill" }, r.status));
+      tr.append(el("td", {}, r.id), gradeTd, titleTd, el("td", {}, r.category), el("td", {}, r.owner), el("td", {}, r.action), stTd, dueTd);
+      t.appendChild(tr);
+    });
+  };
+  filters.forEach(([name], i) => {
+    const b = el("button", { type: "button", "aria-pressed": String(i === active) }, name);
+    b.addEventListener("click", () => {
+      active = i;
+      [...$("filters").children].forEach((c, j) => c.setAttribute("aria-pressed", String(j === i)));
+      renderTable();
+    });
+    $("filters").appendChild(b);
+  });
+  renderTable();
+
+  $("footer").textContent = `원본: ${D.meta.source_file} · 생성: ${D.meta.generated_at.replace("T", " ")}`;
+})();
+</script>
+</body>
+</html>
