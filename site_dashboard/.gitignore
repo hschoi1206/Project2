@@ -1,0 +1,6 @@
+__pycache__/
+.pytest_cache/
+# 실제 현장 데이터는 커밋하지 않는다 (sample_* 더미만 허용)
+data/raw/*.xlsx
+!data/raw/sample_*.xlsx
+~$*.xlsx
