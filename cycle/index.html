@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2f6fd6">
+<meta name="color-scheme" content="light">
+<title>주기 기록</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+:root{
+  --bg:#f5f8fc;--card:#fff;--ink:#1f2a3a;--sub:#7a8699;--line:#e6ecf4;
+  --blue:#2f6fd6;--blue2:#5b8fe3;--pred:#9fc0f2;--band:#e4eefc;--soft:#eef4fd;
+  --fert:#f2a541;--fert2:#fde3bd;--ov:#d9821a;--danger:#d9534f;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif}
+body{padding-bottom:env(safe-area-inset-bottom)}
+header{padding:calc(16px + env(safe-area-inset-top)) 18px 6px;display:flex;justify-content:space-between;align-items:center}
+header h1{font-size:19px;margin:0}
+header span{color:var(--sub);font-size:13px}
+.card{background:var(--card);margin:10px 14px;border-radius:16px;padding:14px;box-shadow:0 1px 4px rgba(20,40,80,.06)}
+.hero{background:linear-gradient(135deg,#2f6fd6,#5b9be8);color:#fff}
+.hero .l{font-size:13px;opacity:.9}
+.hero .d{font-size:30px;font-weight:700;margin:4px 0;line-height:1.25}
+.hero .r{font-size:13px;opacity:.95}
+.hero .row{display:flex;gap:8px;margin-top:10px}
+.pill{background:rgba(255,255,255,.2);border-radius:10px;padding:6px 10px;font-size:12px;flex:1}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}
+.stats b{display:block;font-size:18px}
+.stats small{color:var(--sub);font-size:11px}
+.statnote{font-size:11px;color:var(--sub);text-align:center;margin-top:8px}
+.tabs{display:flex;background:#eaf0f8;border-radius:10px;padding:3px;margin-bottom:8px}
+.tabs button{flex:1;border:0;background:none;padding:8px;font-size:13px;border-radius:8px;color:var(--sub);font-family:inherit}
+.tabs button.on{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.chart{position:relative}
+.chart svg{display:block;width:100%;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.tip{position:absolute;pointer-events:none;background:rgba(31,42,58,.92);color:#fff;font-size:12px;line-height:1.45;padding:6px 9px;border-radius:8px;max-width:220px;white-space:pre-line;display:none;z-index:2}
+.hint{font-size:11px;color:var(--sub);text-align:center;margin-top:4px}
+.legend{display:flex;gap:10px;font-size:11px;color:var(--sub);justify-content:center;margin-top:6px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:3px;vertical-align:-1px}
+.zbtns{display:flex;justify-content:flex-end;gap:4px;margin-bottom:2px}
+.zbtns button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--sub);font-size:15px;padding:0}
+h2{font-size:15px;margin:0 0 10px;display:flex;align-items:center;gap:6px}
+h2 small{font-weight:400;color:var(--sub);font-size:12px}
+label{font-size:12px;color:var(--sub);display:block;margin:8px 0 4px}
+input[type=date],textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:15px;background:#fff;color:var(--ink);font-family:inherit}
+input[type=date]{min-height:44px}
+textarea{resize:vertical}
+input:focus,textarea:focus{outline:2px solid var(--pred);border-color:var(--blue2)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{display:block;width:100%;border:0;background:var(--blue);color:#fff;text-align:center;border-radius:12px;padding:13px;font-weight:600;font-size:15px;margin-top:12px;font-family:inherit}
+.btn.ghost{background:#fff;color:var(--blue);border:1px solid var(--line)}
+.btn.del{background:#fff;color:var(--danger);border:1px solid #f3d3d2}
+.btnrow{display:flex;gap:8px}.btnrow .btn{flex:1}
+.link{display:block;margin:12px auto 0;border:0;background:none;color:var(--blue);font-size:13px;font-family:inherit}
+.err{color:var(--danger);font-size:12px;margin-top:8px;min-height:1em}
+.rec{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;gap:8px}
+.rec:last-child{border-bottom:0}
+.rec .m{font-size:12px;color:var(--sub);margin-top:3px;word-break:break-all}
+.rec .c{font-size:12px;background:var(--soft);color:var(--blue);padding:3px 8px;border-radius:8px;white-space:nowrap}
+.rec .c.x{background:#f3f3f3;color:#999}
+.rec .ed{border:0;background:none;color:#9aa6b8;font-size:17px;padding:4px 6px}
+.rec .rt{display:flex;align-items:center;gap:2px}
+.empty{color:var(--sub);font-size:13px;text-align:center;padding:14px 0}
+.foot{display:flex;gap:8px;margin:4px 14px 10px}
+.foot button{flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:11px;font-size:13px;color:var(--ink);font-family:inherit}
+.disc{font-size:11px;color:var(--sub);text-align:center;padding:0 20px 28px;line-height:1.5}
+.modal{position:fixed;inset:0;background:rgba(15,25,40,.45);display:none;align-items:flex-end;justify-content:center;z-index:10}
+.modal.on{display:flex}
+.sheet{background:#fff;width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+.sheet p{font-size:12px;color:var(--sub);margin:0 0 8px;line-height:1.5}
+.sheet code{background:var(--soft);padding:1px 4px;border-radius:4px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(31,42,58,.92);color:#fff;padding:9px 16px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:20;white-space:nowrap}
+.toast.on{opacity:1}
+.hidden{display:none!important}
+@media (min-width:600px){main{max-width:560px;margin:0 auto}}
+</style>
+</head>
+<body>
+<main>
+<header><h1>💧 주기 기록</h1><span id="todayLbl"></span></header>
+
+<section class="card hero">
+  <div class="l" id="heroL">다음 생리 예정일</div>
+  <div class="d" id="heroD">-</div>
+  <div class="r" id="heroR"></div>
+  <div class="row" id="heroRow"><div class="pill" id="ovPill"></div><div class="pill" id="fwPill"></div></div>
+</section>
+
+<section class="card">
+  <div class="stats" id="stats"></div>
+  <div class="statnote" id="statNote"></div>
+</section>
+
+<section class="card">
+  <div class="tabs" id="tabs">
+    <button data-t="trend" class="on">주기 길이 추이</button>
+    <button data-t="timeline">타임라인</button>
+  </div>
+  <div class="chart" id="trendBox">
+    <svg id="trendSvg"></svg><div class="tip" id="trendTip"></div>
+    <div class="legend"><span><i style="background:var(--blue)"></i>실측 주기</span><span><i style="background:#fff;border:2px solid var(--pred)"></i>예측</span><span><i style="background:var(--band)"></i>±1σ 범위</span><span><i style="background:#ccc"></i>제외(이상치)</span><span>- - 평균</span></div>
+  </div>
+  <div class="chart hidden" id="tlBox">
+    <svg id="tlSvg"></svg><div class="tip" id="tlTip"></div>
+    <div class="legend"><span><i style="background:var(--blue)"></i>생리 기간</span><span><i style="background:var(--blue);opacity:.45"></i>종료일 미입력(추정)</span><span><i style="background:var(--pred)"></i>예측 생리</span><span><i style="background:var(--fert2)"></i>가임기(추정)</span><span style="color:var(--ov)">◆ 배란(추정)</span></div>
+  </div>
+  <div class="hint">두 손가락으로 확대·축소, 한 손가락으로 좌우 이동, 두 번 탭하면 초기화, 점·막대를 탭하면 상세</div>
+</section>
+
+<section class="card" id="formCard">
+  <h2 id="formTitle">➕ 기록 추가</h2>
+  <div class="two">
+    <div><label for="fStart">시작일 *</label><input type="date" id="fStart"></div>
+    <div><label for="fEnd">종료일 (선택)</label><input type="date" id="fEnd"></div>
+  </div>
+  <label for="fMemo">메모 (선택)</label>
+  <textarea id="fMemo" rows="2" maxlength="300" placeholder="복통, 컨디션, 특이사항 등"></textarea>
+  <div class="err" id="fErr"></div>
+  <div id="addBtns"><button class="btn" id="saveBtn">저장</button></div>
+  <div id="editBtns" class="hidden">
+    <div class="btnrow"><button class="btn ghost" id="cancelBtn">취소</button><button class="btn" id="updBtn">수정 저장</button></div>
+    <button class="btn del" id="delBtn">이 기록 삭제</button>
+  </div>
+  <button class="link" id="bulkOpen">📋 과거 날짜 여러 개 한 번에 붙여넣기</button>
+</section>
+
+<section class="card">
+  <h2>📅 기록 목록 <small id="cnt"></small></h2>
+  <div id="list"></div>
+  <button class="link hidden" id="moreBtn">전체 보기 ▾</button>
+</section>
+
+<div class="foot">
+  <button id="expBtn">⬇ 백업 내보내기</button>
+  <button id="impBtn">⬆ 백업 불러오기</button>
+  <input type="file" id="impFile" accept=".json,application/json" class="hidden">
+</div>
+<div class="disc">※ 예측은 과거 기록을 통계적으로 추정한 값이며 피임·진단 목적으로 사용할 수 없습니다.<br>기록은 이 기기의 브라우저에만 저장됩니다. 주기적으로 백업해 두세요.</div>
+</main>
+
+<div class="modal" id="bulkModal">
+  <div class="sheet">
+    <h2>📋 과거 기록 일괄 입력</h2>
+    <p>한 줄에 한 건씩 입력합니다. 시작일만 써도 되고, 종료일과 메모를 덧붙여도 됩니다.<br>
+    예) <code>2025-03-02</code> · <code>2025.03.02 ~ 2025.03.06</code> · <code>2025/3/2 ~ 3/6 생리통</code></p>
+    <textarea id="bulkText" rows="9" placeholder="2025-01-05&#10;2025-02-02 ~ 2025-02-06&#10;2025.03.03 ~ 3.07 두통"></textarea>
+    <div class="err" id="bulkErr"></div>
+    <div class="btnrow"><button class="btn ghost" id="bulkCancel">닫기</button><button class="btn" id="bulkAdd">추가</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* ====== 날짜 유틸 (UTC 일 번호 기반: 시간대/서머타임 영향 없음) ====== */
+const DAY = 864e5, WK = '일월화수목금토';
+const dn = s => { const [y,m,d] = s.split('-').map(Number); return Date.UTC(y,m-1,d)/DAY; };
+const dt = n => new Date(Math.round(n)*DAY);
+const iso = n => dt(n).toISOString().slice(0,10);
+const ymd = n => { const d=dt(n); return `${d.getUTCFullYear()}.${String(d.getUTCMonth()+1).padStart(2,'0')}.${String(d.getUTCDate()).padStart(2,'0')}`; };
+const md = n => { const d=dt(n); return `${d.getUTCMonth()+1}/${d.getUTCDate()}`; };
+const wk = n => WK[dt(n).getUTCDay()];
+const todayDN = () => { const t=new Date(); return Date.UTC(t.getFullYear(),t.getMonth(),t.getDate())/DAY; };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = id => document.getElementById(id);
+
+/* ====== 저장소 ====== */
+const KEY = 'cycleTracker.v1';
+let records = [];
+function load(){
+  try { const o = JSON.parse(localStorage.getItem(KEY)||'{}'); records = Array.isArray(o.records)?o.records.filter(validRec):[]; }
+  catch(e){ records = []; }
+  sortRecs();
+}
+function save(){ localStorage.setItem(KEY, JSON.stringify({version:1, records})); }
+function sortRecs(){ records.sort((a,b)=>a.start<b.start?-1:1); }
+function validRec(r){ return r && /^\d{4}-\d{2}-\d{2}$/.test(r.start) && (!r.end || /^\d{4}-\d{2}-\d{2}$/.test(r.end)); }
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+/* ====== 분석/예측 ====== */
+const MIN_C = 15, MAX_C = 60, RECENT = 6;
+let A = null; // 분석 결과
+function analyze(){
+  const t = todayDN();
+  const s = records.map(r=>({...r, s:dn(r.start), e:r.end?dn(r.end):null}));
+  const cycles = [];
+  for (let i=0;i<s.length-1;i++){
+    const len = s[i+1].s - s[i].s;
+    cycles.push({i, start:s[i].s, len, valid: len>=MIN_C && len<=MAX_C});
+  }
+  const valid = cycles.filter(c=>c.valid);
+  const recent = valid.slice(-RECENT).map(c=>c.len);
+  const mean = a => a.reduce((x,y)=>x+y,0)/a.length;
+  const avg = recent.length ? mean(recent) : 28;
+  const sd = recent.length>=2 ? Math.sqrt(mean(recent.map(v=>(v-avg)**2))) : null;
+  const pl = s.filter(r=>r.e!=null).slice(-RECENT).map(r=>r.e-r.s+1);
+  const avgP = pl.length ? mean(pl) : 5;
+  const P = Math.max(1, Math.round(avgP));
+  const R = Math.round(avg);
+  const last = s.length ? s[s.length-1] : null;
+  const preds = last ? [1,2,3].map(k=>last.s + R*k) : [];
+  // 기간 끝 (미입력은 평균 기간으로 추정)
+  s.forEach(r=>{ r.estEnd = r.e!=null ? r.e : r.s + P - 1; r.estimated = r.e==null; });
+  // 배란/가임기: 실측 다음 시작일 기준 + 예측 시작일 기준
+  const ovs = [];
+  cycles.forEach(c=>{ if(c.valid) ovs.push({ov:s[c.i+1].s-14, pred:false}); });
+  preds.forEach(p=>ovs.push({ov:p-14, pred:true}));
+  A = {t, s, cycles, valid, recent, avg, sd, avgP, P, R, last, preds, ovs};
+  return A;
+}
+
+/* ====== 상단 카드/통계 ====== */
+function renderHero(){
+  const {t,last,preds,sd,avg,R,P,recent,valid,avgP} = A;
+  $('todayLbl').textContent = `${ymd(t)} (${wk(t)})`;
+  if (!last){
+    $('heroL').textContent = '시작하기';
+    $('heroD').textContent = '첫 기록을 입력하세요';
+    $('heroR').textContent = '생리 시작일을 입력하면 다음 예정일을 계산합니다.';
+    $('heroRow').classList.add('hidden');
+  } else {
+    $('heroRow').classList.remove('hidden');
+    const nx = preds[0], dd = nx - t, day = t - last.s + 1;
+    const inPeriod = t>=last.s && t<=last.estEnd;
+    $('heroL').textContent = inPeriod ? `생리 ${day}일째 · 다음 예정일` : '다음 생리 예정일';
+    const ddTxt = dd>0 ? `D-${dd}` : dd===0 ? 'D-Day' : `${-dd}일 지남`;
+    $('heroD').textContent = `${dt(nx).getUTCMonth()+1}월 ${dt(nx).getUTCDate()}일 (${wk(nx)}) · ${ddTxt}`;
+    const rng = Math.max(1, Math.ceil(sd ?? 2));
+    let r = `예상 범위 ${md(nx-rng)} ~ ${md(nx+rng)} · 현재 주기 ${day}일째`;
+    if (recent.length<2) r += ' · 기록 3건 이상부터 개인 평균 반영';
+    if (dd<0) r = `예정일이 ${-dd}일 지났습니다. 시작했다면 기록을 추가하세요.`;
+    $('heroR').textContent = r;
+    // 다음 배란: 오늘 이후 가장 가까운 예측 배란
+    const o = A.ovs.filter(x=>x.ov+1>=t).sort((a,b)=>a.ov-b.ov)[0] || {ov:nx-14};
+    $('ovPill').textContent = `배란 추정 ${md(o.ov)} (${wk(o.ov)})`;
+    $('fwPill').textContent = `가임기 ${md(o.ov-5)} ~ ${md(o.ov+1)}`;
+  }
+  const lens = valid.map(c=>c.len);
+  const cells = [
+    [recent.length? avg.toFixed(1):'-', '평균 주기'],
+    [lens.length? Math.min(...lens):'-', '최단'],
+    [lens.length? Math.max(...lens):'-', '최장'],
+    [sd!=null? '±'+sd.toFixed(1):'-', '변동폭(σ)'],
+  ];
+  $('stats').innerHTML = cells.map(([b,s])=>`<div><b>${b}</b><small>${s}</small></div>`).join('');
+  const ex = A.cycles.length - valid.length;
+  $('statNote').textContent = records.length
+    ? `최근 ${recent.length}회 주기 기준 · 평균 생리 기간 ${avgP.toFixed(1)}일${ex?` · 이상치 ${ex}건 제외(${MIN_C}일 미만/${MAX_C}일 초과)`:''}`
+    : '';
+}
+
+/* ====== 확대/축소/이동 엔진 (Pointer Events) ====== */
+class TimeZoom {
+  constructor(svg, opts){
+    this.svg = svg; this.o = opts; this.ptrs = new Map(); this.view = null; this.lastTap = 0; this.raf = 0;
+    svg.addEventListener('pointerdown', e=>this.down(e));
+    svg.addEventListener('pointermove', e=>this.move(e));
+    ['pointerup','pointercancel','pointerleave'].forEach(n=>svg.addEventListener(n, e=>this.up(e)));
+    svg.addEventListener('wheel', e=>this.wheel(e), {passive:false});
+    new ResizeObserver(()=>this.draw()).observe(svg);
+  }
+  W(){ return this.svg.clientWidth || 320; }
+  reset(){ this.view = this.o.defaultView(); this.draw(); }
+  clamp(t0,t1){
+    const [b0,b1] = this.o.bounds(); const maxS = Math.max(60, b1-b0), minS = 10;
+    let s = Math.min(maxS, Math.max(minS, t1-t0));
+    const c = (t0+t1)/2; t0 = c - s/2; t1 = c + s/2;
+    if (t0 < b0){ t1 += b0-t0; t0 = b0; }
+    if (t1 > b1){ t0 -= t1-b1; t1 = b1; }
+    return [t0,t1];
+  }
+  snap(){
+    const pts = [...this.ptrs.values()], r = this.svg.getBoundingClientRect();
+    this.g = { v:[...this.view], left:r.left, n:pts.length };
+    if (pts.length===1){ this.g.x = pts[0].x; }
+    if (pts.length>=2){ this.g.cx = (pts[0].x+pts[1].x)/2; this.g.d = Math.max(20, Math.abs(pts[0].x-pts[1].x)); }
+  }
+  down(e){
+    if (e.pointerType==='mouse' && e.button!==0) return;
+    try { this.svg.setPointerCapture(e.pointerId); } catch(_){}
+    this.ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY, x0:e.clientX, y0:e.clientY, t0:performance.now()});
+    this.snap();
+  }
+  move(e){
+    const p = this.ptrs.get(e.pointerId); if(!p) return;
+    p.x = e.clientX; p.y = e.clientY;
+    const pts = [...this.ptrs.values()], W = this.W(), g = this.g, span0 = g.v[1]-g.v[0];
+    if (pts.length===1){
+      if (Math.abs(p.x-p.x0) < 4 && Math.abs(p.y-p.y0) < 4) return;
+      const sh = -(p.x - g.x) * span0 / W;
+      this.view = this.clamp(g.v[0]+sh, g.v[1]+sh);
+    } else if (pts.length>=2){
+      const cx = (pts[0].x+pts[1].x)/2, d = Math.max(20, Math.abs(pts[0].x-pts[1].x));
+      const ns = span0 * g.d / d;
+      const anchor = g.v[0] + (g.cx-g.left)/W*span0;
+      const t0 = anchor - (cx-g.left)/W*ns;
+      this.view = this.clamp(t0, t0+ns);
+    }
+    this.hideTip(); this.draw();
+  }
+  up(e){
+    const p = this.ptrs.get(e.pointerId); if(!p) return;
+    const wasSingle = this.ptrs.size===1 && this.g.n===1;
+    this.ptrs.delete(e.pointerId);
+    if (e.type==='pointerup' && wasSingle && Math.hypot(p.x-p.x0,p.y-p.y0)<8 && performance.now()-p.t0<350){
+      const now = performance.now();
+      if (now - this.lastTap < 320){ this.lastTap = 0; this.hideTip(); this.reset(); }
+      else { this.lastTap = now; this.tap(p.x, p.y); }
+    }
+    this.snap();
+  }
+  wheel(e){
+    e.preventDefault();
+    const r = this.svg.getBoundingClientRect(), W = this.W(), [t0,t1] = this.view, s = t1-t0;
+    const f = Math.exp(e.deltaY*0.0015), ns = s*f, a = t0 + (e.clientX-r.left)/W*s;
+    const n0 = a - (e.clientX-r.left)/W*ns;
+    this.view = this.clamp(n0, n0+ns); this.hideTip(); this.draw();
+  }
+  zoomBy(f){ const [t0,t1]=this.view, c=(t0+t1)/2, s=(t1-t0)*f; this.view=this.clamp(c-s/2,c+s/2); this.hideTip(); this.draw(); }
+  tap(cx, cy){
+    const r = this.svg.getBoundingClientRect(), x = cx-r.left, y = cy-r.top;
+    const hit = this.o.hit?.(x, y, this.ctx);
+    const tip = this.o.tip;
+    if (!hit){ this.hideTip(); return; }
+    tip.textContent = hit.text; tip.style.display = 'block';
+    const bw = tip.offsetWidth, bh = tip.offsetHeight, W = this.W();
+    tip.style.left = Math.min(W-bw-2, Math.max(2, hit.x - bw/2)) + 'px';
+    tip.style.top = Math.max(0, hit.y - bh - 10) + 'px';
+  }
+  hideTip(){ if(this.o.tip) this.o.tip.style.display='none'; }
+  draw(){
+    if (this.raf) return;
+    this.raf = requestAnimationFrame(()=>{ this.raf = 0;
+      if (!this.svg.clientWidth) return;
+      if (!this.view) this.view = this.o.defaultView();
+      const W = this.W(), H = this.o.height, [t0,t1] = this.view;
+      const X = d => (d - t0)/(t1-t0)*W;
+      this.svg.setAttribute('viewBox', `0 0 ${W} ${H}`); this.svg.setAttribute('height', H);
+      this.ctx = {W,H,t0,t1,X};
+      this.svg.innerHTML = this.o.render(this.ctx);
+    });
+  }
+}
+
+/* ====== 축 눈금 (확대 수준에 따라 일/주/월/분기/연) ====== */
+function ticks(t0,t1,W){
+  const ppd = W/(t1-t0), out = [];
+  const Y = n => dt(n).getUTCFullYear(), M = n => dt(n).getUTCMonth();
+  if (ppd*7 >= 44){
+    const step = ppd >= 30 ? 1 : ppd >= 13 ? 3 : 7;
+    let s = Math.ceil(t0);
+    if (step===7){ while (dt(s).getUTCDay()!==1) s++; }
+    for (let n=s; n<=t1; n+=step){ const d=dt(n); out.push({n, lbl:`${d.getUTCMonth()+1}/${d.getUTCDate()}`, major:d.getUTCDate()===1}); }
+    return {out, unit:'day'};
+  }
+  const mStep = ppd*30 >= 42 ? 1 : ppd*91 >= 42 ? 3 : ppd*182 >= 42 ? 6 : 12;
+  let y = Y(t0), m = M(t0);
+  for (let k=0;k<400;k++){
+    const n = Date.UTC(y,m,1)/DAY; if (n>t1) break;
+    if (n>=t0 && m % mStep===0){
+      out.push({n, lbl: mStep===12 ? `${y}` : (m===0 ? `${y}` : `${String(y%100).padStart(2,'0')}.${m+1}`), major:m===0});
+    }
+    m++; if (m>11){m=0;y++;}
+  }
+  return {out, unit:'month'};
+}
+
+/* ====== 차트 1: 주기 길이 추이 ====== */
+const trendPts = () => {
+  const {cycles,last,preds,R} = A, pts = cycles.map(c=>({x:c.start, y:c.len, kind:c.valid?'act':'out', i:c.i}));
+  if (last){ [last.s, preds[0], preds[1]].forEach((x,k)=>pts.push({x, y:R, kind:'pred', k})); }
+  return pts;
+};
+const trend = new TimeZoom($('trendSvg'), {
+  height: 250, tip: $('trendTip'),
+  bounds(){ if(!A.last) return [A.t-200, A.t+60]; return [A.s[0].s-30, A.preds[2]+30]; },
+  defaultView(){ if(!A.last) return [A.t-180, A.t+40]; const e = A.preds[1]+15; return this.bounds ? [Math.max(A.s[0].s-15, e-400), e] : [e-400,e]; },
+  render({W,H,t0,t1,X}){
+    const pl=30, pt=14, pb=40, B=H-pb;
+    const pts = trendPts();
+    if (!pts.length) return `<text x="${W/2}" y="${H/2}" text-anchor="middle" font-size="13" fill="#7a8699">기록 2건 이상부터 주기 그래프가 표시됩니다</text>`;
+    const ys = pts.map(p=>p.y).concat(A.sd!=null?[A.avg+A.sd, A.avg-A.sd]:[]);
+    let y0 = Math.floor(Math.min(...ys))-2, y1 = Math.ceil(Math.max(...ys))+2;
+    if (y1-y0 < 8){ const c=(y0+y1)/2; y0=Math.floor(c-4); y1=Math.ceil(c+4); }
+    const Y = v => B - (v-y0)/(y1-y0)*(B-pt);
+    const ystep = (y1-y0)>24 ? 5 : 2;
+    let s = '';
+    // 세로 격자 + x축
+    const tk = ticks(t0,t1,W);
+    tk.out.forEach(k=>{ const x=X(k.n); s+=`<line x1="${x}" x2="${x}" y1="${pt}" y2="${B}" stroke="${k.major?'#dfe7f2':'#f0f4f9'}"/>`; });
+    for (let v=Math.ceil(y0/ystep)*ystep; v<=y1; v+=ystep) s+=`<line x1="0" x2="${W}" y1="${Y(v)}" y2="${Y(v)}" stroke="#eef2f8"/>`;
+    // ±1σ, 평균
+    if (A.sd!=null){
+      s+=`<rect x="0" width="${W}" y="${Y(A.avg+A.sd)}" height="${Y(A.avg-A.sd)-Y(A.avg+A.sd)}" fill="#e4eefc" opacity=".8"/>`;
+    }
+    if (A.recent.length){
+      s+=`<line x1="0" x2="${W}" y1="${Y(A.avg)}" y2="${Y(A.avg)}" stroke="#2f6fd6" stroke-dasharray="4 3" opacity=".55"/>`;
+    }
+    // 오늘
+    if (A.t>=t0 && A.t<=t1){ const x=X(A.t); s+=`<line x1="${x}" x2="${x}" y1="${pt}" y2="${B}" stroke="#1f2a3a" stroke-width="1" stroke-dasharray="2 3" opacity=".5"/><text x="${x}" y="${pt-3}" font-size="9" text-anchor="middle" fill="#1f2a3a">오늘</text>`; }
+    // 선
+    const act = pts.filter(p=>p.kind!=='pred'), pr = pts.filter(p=>p.kind==='pred');
+    if (act.length>1) s+=`<polyline points="${act.map(p=>`${X(p.x)},${Y(p.y)}`).join(' ')}" fill="none" stroke="#2f6fd6" stroke-width="2.2" stroke-linejoin="round"/>`;
+    if (pr.length){ const chain = (act.length?[act[act.length-1]]:[]).concat(pr); s+=`<polyline points="${chain.map(p=>`${X(p.x)},${Y(p.y)}`).join(' ')}" fill="none" stroke="#9fc0f2" stroke-width="2" stroke-dasharray="5 4"/>`; }
+    // 점 + 라벨
+    const ppd = W/(t1-t0), showLbl = ppd*Math.max(15,A.avg) >= 16;
+    pts.forEach(p=>{
+      const x=X(p.x), y=Y(p.y); if (x<-10||x>W+10) return;
+      if (p.kind==='act') s+=`<circle cx="${x}" cy="${y}" r="4" fill="#2f6fd6" stroke="#fff" stroke-width="2"/>`;
+      else if (p.kind==='out') s+=`<circle cx="${x}" cy="${y}" r="4" fill="#bbb" stroke="#fff" stroke-width="2"/>`;
+      else s+=`<circle cx="${x}" cy="${y}" r="4" fill="#fff" stroke="#9fc0f2" stroke-width="2.2"/>`;
+      if (showLbl && p.kind!=='pred') s+=`<text x="${x}" y="${y-8}" font-size="10" text-anchor="middle" fill="${p.kind==='out'?'#999':'#1f2a3a'}">${p.y}</text>`;
+    });
+    // y축 라벨 (고정)
+    s+=`<rect x="0" y="0" width="${pl-4}" height="${B+1}" fill="#fff" opacity=".85"/>`;
+    for (let v=Math.ceil(y0/ystep)*ystep; v<=y1; v+=ystep) s+=`<text x="${pl-8}" y="${Y(v)+4}" font-size="10" fill="#7a8699" text-anchor="end">${v}</text>`;
+    s+=`<line x1="0" x2="${W}" y1="${B}" y2="${B}" stroke="#d5deea"/>`;
+    tk.out.forEach(k=>{ const x=X(k.n); if(x<pl||x>W-8) return; s+=`<text x="${x}" y="${B+15}" font-size="10" text-anchor="middle" fill="${k.n>A.t?'#2f6fd6':'#7a8699'}" font-weight="${k.major?600:400}">${k.lbl}</text>`; });
+    s+=`<text x="2" y="${B+32}" font-size="9" fill="#7a8699">(일)${A.recent.length?` · <tspan fill="#2f6fd6">평균 ${A.avg.toFixed(1)}±${(A.sd||0).toFixed(1)}일</tspan>`:''}</text><text x="${W-2}" y="${B+32}" font-size="9" fill="#7a8699" text-anchor="end">주기 시작일 →</text>`;
+    return s;
+  },
+  hit(x,y,{X}){
+    const B=250-40, pts=trendPts(); if(!pts.length) return null;
+    const ys = pts.map(p=>p.y).concat(A.sd!=null?[A.avg+A.sd,A.avg-A.sd]:[]);
+    let y0=Math.floor(Math.min(...ys))-2, y1=Math.ceil(Math.max(...ys))+2;
+    if (y1-y0<8){ const c=(y0+y1)/2; y0=Math.floor(c-4); y1=Math.ceil(c+4); }
+    const Y = v => B-(v-y0)/(y1-y0)*(B-14);
+    let best=null, bd=26;
+    pts.forEach(p=>{ const d=Math.hypot(X(p.x)-x, Y(p.y)-y); if(d<bd){bd=d;best=p;} });
+    if (!best) return null;
+    let text;
+    if (best.kind==='pred'){
+      text = best.k===0 ? `현재 주기 (${ymd(best.x)} 시작)\n예상 길이 ${A.R}일 → 다음 ${ymd(A.preds[0])}` : `예측 ${ymd(best.x)} (${wk(best.x)}) 시작\n예상 주기 ${A.R}일`;
+    } else {
+      const r = A.s[best.i];
+      text = `${ymd(r.s)} 시작 · ${best.y}일 주기${best.kind==='out'?' (이상치·평균 제외)':''}\n${r.e!=null?`생리 ${r.e-r.s+1}일 (~${md(r.e)})`:'종료일 미입력'}${r.memo?`\n📝 ${r.memo}`:''}`;
+    }
+    return {x:X(best.x), y:Y(best.y), text};
+  }
+});
+
+/* ====== 차트 2: 타임라인 ====== */
+const TL = {top:22, pY:30, pH:30, fY:72, fH:18, axis:112, H:140};
+const tl = new TimeZoom($('tlSvg'), {
+  height: TL.H, tip: $('tlTip'),
+  bounds(){ if(!A.last) return [A.t-200, A.t+90]; return [Math.min(A.s[0].s, A.t)-30, A.preds[2]+40]; },
+  defaultView(){ return [A.t-110, A.t+60]; },
+  render({W,H,t0,t1,X}){
+    let s=''; const ppd = W/(t1-t0);
+    const tk = ticks(t0,t1,W);
+    // 월 경계/격자
+    tk.out.forEach(k=>{ const x=X(k.n); s+=`<line x1="${x}" x2="${x}" y1="${TL.top}" y2="${TL.axis}" stroke="${k.major?'#d5deea':'#edf1f7'}"/>`; });
+    // 레인 배경
+    s+=`<rect x="0" y="${TL.pY}" width="${W}" height="${TL.pH}" fill="#f4f7fb"/><rect x="0" y="${TL.fY}" width="${W}" height="${TL.fH}" fill="#faf7f1"/>`;
+    // 일 단위 격자
+    if (ppd>=10){ for(let n=Math.floor(t0); n<=t1; n++){ const x=X(n); s+=`<line x1="${x}" x2="${x}" y1="${TL.pY}" y2="${TL.fY+TL.fH}" stroke="#fff" stroke-width="1"/>`; } }
+    const bar = (a,b,y,h,fill,extra='') => { const x0=X(a), x1=X(b+1); if (x1<0||x0>W) return ''; return `<rect x="${x0+.5}" y="${y}" width="${Math.max(1.5,x1-x0-1)}" height="${h}" rx="${Math.min(5,(x1-x0)/3)}" fill="${fill}" ${extra}/>`; };
+    // 가임기 / 배란
+    A.ovs.forEach(o=>{
+      s+=bar(o.ov-5,o.ov+1,TL.fY,TL.fH,o.pred?'#fde3bd':'#f9d29b');
+      const x=X(o.ov+.5); if(x>-10&&x<W+10) s+=`<path d="M${x} ${TL.fY+3}l6 6l-6 6l-6-6z" fill="#d9821a"/>`;
+    });
+    // 예측 생리
+    A.preds.forEach(p=>{ s+=bar(p,p+A.P-1,TL.pY,TL.pH,'#9fc0f2','stroke="#5b8fe3" stroke-dasharray="3 3" stroke-width="1"'); });
+    // 실측 생리
+    A.s.forEach(r=>{ s+=bar(r.s,r.estEnd,TL.pY,TL.pH,'#2f6fd6', r.estimated?'opacity=".45"':''); });
+    // 일자 숫자 (충분히 확대 시)
+    if (ppd>=16){ for(let n=Math.ceil(t0); n<=t1; n++){ s+=`<text x="${X(n+.5)}" y="${TL.pY+TL.pH/2+4}" font-size="${ppd>=22?10:9}" text-anchor="middle" fill="#1f2a3a" opacity=".55">${dt(n).getUTCDate()}</text>`; } }
+    // 시작일 라벨
+    if (ppd>=1.6) A.s.forEach(r=>{ const x=X(r.s); if(x>-30&&x<W) s+=`<text x="${x+1}" y="${TL.pY-4}" font-size="9" fill="#2f6fd6">${md(r.s)}</text>`; });
+    if (ppd>=1.6) A.preds.forEach(p=>{ const x=X(p); if(x>-30&&x<W) s+=`<text x="${x+1}" y="${TL.pY-4}" font-size="9" fill="#5b8fe3">${md(p)}?</text>`; });
+    // 오늘
+    if (A.t>=t0-1&&A.t<=t1){ const x=X(A.t+.5); s+=`<line x1="${x}" x2="${x}" y1="${TL.top-6}" y2="${TL.axis}" stroke="#1f2a3a" stroke-width="1.5"/><rect x="${x-14}" y="${TL.top-20}" width="28" height="14" rx="7" fill="#1f2a3a"/><text x="${x}" y="${TL.top-10}" font-size="9" fill="#fff" text-anchor="middle">오늘</text>`; }
+    // 축
+    s+=`<line x1="0" x2="${W}" y1="${TL.axis}" y2="${TL.axis}" stroke="#d5deea"/>`;
+    tk.out.forEach(k=>{ const x=X(k.n); if(x<8||x>W-8) return; s+=`<text x="${x}" y="${TL.axis+15}" font-size="10" text-anchor="middle" fill="#7a8699" font-weight="${k.major?600:400}">${k.lbl}</text>`; });
+    // 레인 라벨(고정)
+    s+=`<rect x="0" y="${TL.pY+TL.pH+1}" width="40" height="11" fill="#fff" opacity=".8"/><text x="2" y="${TL.pY+TL.pH+10}" font-size="9" fill="#7a8699">생리</text>`;
+    s+=`<text x="2" y="${TL.fY+TL.fH+10}" font-size="9" fill="#7a8699">가임기</text>`;
+    return s;
+  },
+  hit(x,y,{t0,t1,W,X}){
+    const n = Math.floor(t0 + x/W*(t1-t0));
+    if (y>=TL.pY-12 && y<=TL.pY+TL.pH+6){
+      const r = A.s.find(r=>n>=r.s && n<=r.estEnd);
+      if (r){ const ci = A.s.indexOf(r), nx = A.s[ci+1];
+        return {x, y:TL.pY, text:`${ymd(r.s)} ~ ${ymd(r.estEnd)}${r.estimated?' (종료일 추정)':''}\n생리 ${r.estEnd-r.s+1}일${nx?` · 주기 ${nx.s-r.s}일`:''}${r.memo?`\n📝 ${r.memo}`:''}`}; }
+      const p = A.preds.find(p=>n>=p && n<=p+A.P-1);
+      if (p!=null) return {x, y:TL.pY, text:`예측 생리 ${ymd(p)} (${wk(p)}) ~ ${md(p+A.P-1)}\n평균 주기 ${A.R}일 기준`};
+    }
+    if (y>=TL.fY-6 && y<=TL.fY+TL.fH+6){
+      const o = A.ovs.find(o=>n>=o.ov-5 && n<=o.ov+1);
+      if (o) return {x, y:TL.fY, text:`가임기(추정) ${md(o.ov-5)} ~ ${md(o.ov+1)}\n배란 추정 ${ymd(o.ov)} (${wk(o.ov)})`};
+    }
+    return null;
+  }
+});
+
+/* ====== 탭 ====== */
+$('tabs').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  [...$('tabs').children].forEach(x=>x.classList.toggle('on', x===b));
+  const t = b.dataset.t;
+  $('trendBox').classList.toggle('hidden', t!=='trend');
+  $('tlBox').classList.toggle('hidden', t!=='timeline');
+  (t==='trend'?trend:tl).draw();
+});
+// 확대/축소 버튼(보조)
+[['trendBox',trend],['tlBox',tl]].forEach(([id,z])=>{
+  const d = document.createElement('div'); d.className='zbtns';
+  d.innerHTML = '<button aria-label="축소">−</button><button aria-label="확대">＋</button><button aria-label="초기화">⟲</button>';
+  const [a,b,c] = d.children; a.onclick=()=>z.zoomBy(1.6); b.onclick=()=>z.zoomBy(1/1.6); c.onclick=()=>{z.hideTip();z.reset();};
+  $(id).prepend(d);
+});
+
+/* ====== 목록 ====== */
+let showAll = false;
+function renderList(){
+  $('cnt').textContent = records.length ? `총 ${records.length}건` : '';
+  if (!records.length){ $('list').innerHTML = '<div class="empty">아직 기록이 없습니다</div>'; $('moreBtn').classList.add('hidden'); return; }
+  const rows = A.s.map((r,i)=>({r,i})).reverse();
+  const vis = showAll ? rows : rows.slice(0,6);
+  $('list').innerHTML = vis.map(({r,i})=>{
+    const nx = A.s[i+1], c = nx ? nx.s - r.s : null, bad = c!=null && (c<MIN_C||c>MAX_C);
+    const per = r.e!=null ? `~ ${md(r.e)} <span style="color:#7a8699;font-size:12px">(${r.e-r.s+1}일)</span>` : `<span style="color:#aab3c2;font-size:12px">종료일 미입력</span>`;
+    return `<div class="rec"><div><b>${ymd(r.s)}</b> <span style="color:#7a8699;font-size:12px">(${wk(r.s)})</span> ${per}${r.memo?`<div class="m">📝 ${esc(r.memo)}</div>`:''}</div>
+      <div class="rt">${c!=null?`<span class="c ${bad?'x':''}">${c}일 주기</span>`:'<span class="c">진행 중</span>'}<button class="ed" data-id="${r.id}" aria-label="수정">✎</button></div></div>`;
+  }).join('');
+  $('moreBtn').classList.toggle('hidden', rows.length<=6);
+  $('moreBtn').textContent = showAll ? '접기 ▴' : `전체 보기 (${rows.length}건) ▾`;
+}
+$('moreBtn').onclick = ()=>{ showAll=!showAll; renderList(); };
+$('list').addEventListener('click', e=>{ const b=e.target.closest('.ed'); if(b) startEdit(b.dataset.id); });
+
+/* ====== 입력/수정 ====== */
+let editId = null;
+function readForm(){
+  const start=$('fStart').value, end=$('fEnd').value, memo=$('fMemo').value.trim();
+  if (!start) return {err:'시작일을 입력하세요.'};
+  if (dn(start) > todayDN()) return {err:'시작일이 오늘 이후입니다.'};
+  if (end){
+    const d = dn(end)-dn(start);
+    if (d<0) return {err:'종료일이 시작일보다 앞섭니다.'};
+    if (d>14) return {err:'생리 기간이 15일 이상입니다. 날짜를 확인하세요.'};
+  }
+  const dup = records.find(r=>r.start===start && r.id!==editId);
+  if (dup) return {err:`${ymd(dn(start))} 기록이 이미 있습니다.`};
+  return {start, end:end||'', memo};
+}
+function resetForm(){
+  editId=null; $('fStart').value=''; $('fEnd').value=''; $('fMemo').value=''; $('fErr').textContent='';
+  $('formTitle').textContent='➕ 기록 추가'; $('addBtns').classList.remove('hidden'); $('editBtns').classList.add('hidden');
+  $('fStart').max = iso(todayDN());
+}
+function startEdit(id){
+  const r = records.find(x=>x.id===id); if(!r) return;
+  editId=id; $('fStart').value=r.start; $('fEnd').value=r.end||''; $('fMemo').value=r.memo||''; $('fErr').textContent='';
+  $('formTitle').textContent='✎ 기록 수정'; $('addBtns').classList.add('hidden'); $('editBtns').classList.remove('hidden');
+  $('formCard').scrollIntoView({behavior:'smooth', block:'start'});
+}
+$('saveBtn').onclick = ()=>{
+  const f=readForm(); if(f.err){ $('fErr').textContent=f.err; return; }
+  records.push({id:uid(), ...f}); commit(); resetForm(); toast('저장했습니다');
+};
+$('updBtn').onclick = ()=>{
+  const f=readForm(); if(f.err){ $('fErr').textContent=f.err; return; }
+  Object.assign(records.find(r=>r.id===editId), f); commit(); resetForm(); toast('수정했습니다');
+};
+$('delBtn').onclick = ()=>{
+  const r = records.find(r=>r.id===editId); if(!r) return;
+  if (!confirm(`${ymd(dn(r.start))} 기록을 삭제할까요?`)) return;
+  records = records.filter(x=>x.id!==editId); commit(); resetForm(); toast('삭제했습니다');
+};
+$('cancelBtn').onclick = resetForm;
+$('fStart').addEventListener('change', ()=>{ $('fEnd').min = $('fStart').value; $('fErr').textContent=''; });
+
+/* ====== 일괄 입력 ====== */
+const D_RE = /(\d{4})\s*[.\-\/년]\s*(\d{1,2})\s*[.\-\/월]\s*(\d{1,2})\s*일?/;
+const MD_RE = /^\s*[~\-–]?\s*(\d{1,2})\s*[.\-\/월]\s*(\d{1,2})\s*일?/;
+function okDate(y,m,d){ const x=new Date(Date.UTC(y,m-1,d)); return x.getUTCFullYear()===y && x.getUTCMonth()===m-1 && x.getUTCDate()===d; }
+const pad = (y,m,d) => `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+function parseLine(line){
+  let m = line.match(D_RE); if(!m) return null;
+  const y=+m[1], mo=+m[2], d=+m[3]; if(!okDate(y,mo,d)) return {bad:line};
+  const start = pad(y,mo,d); let rest = line.slice(m.index+m[0].length), end='';
+  const sep = rest.match(/^\s*[~\-–]\s*/);
+  if (sep){
+    const r2 = rest.slice(sep[0].length), m2 = r2.match(D_RE), m3 = r2.match(MD_RE);
+    if (m2 && m2.index===0 && okDate(+m2[1],+m2[2],+m2[3])){ end = pad(+m2[1],+m2[2],+m2[3]); rest = r2.slice(m2[0].length); }
+    else if (m3 && okDate(y,+m3[1],+m3[2])){
+      let ey = y; if (+m3[1] < mo) ey = y+1;
+      end = pad(ey,+m3[1],+m3[2]); rest = r2.slice(m3[0].length);
+    }
+  }
+  if (end){ const g=dn(end)-dn(start); if(g<0||g>14) end=''; }
+  return {start, end, memo: rest.trim().slice(0,300)};
+}
+$('bulkOpen').onclick = ()=>{ $('bulkErr').textContent=''; $('bulkModal').classList.add('on'); };
+$('bulkCancel').onclick = ()=> $('bulkModal').classList.remove('on');
+$('bulkModal').addEventListener('click', e=>{ if(e.target===$('bulkModal')) $('bulkModal').classList.remove('on'); });
+$('bulkAdd').onclick = ()=>{
+  const lines = $('bulkText').value.split(/\n/).map(s=>s.trim()).filter(Boolean);
+  let add=0, dup=0, bad=[];
+  const t = todayDN();
+  lines.forEach(l=>{
+    const p = parseLine(l);
+    if (!p || p.bad || dn(p.start)>t){ bad.push(l); return; }
+    if (records.some(r=>r.start===p.start)){ dup++; return; }
+    records.push({id:uid(), ...p}); add++;
+  });
+  if (add) commit();
+  if (bad.length){ $('bulkErr').textContent = `인식 실패 ${bad.length}줄: ${bad.slice(0,3).join(' / ')}${bad.length>3?' …':''}`; $('bulkText').value = bad.join('\n'); }
+  else { $('bulkText').value=''; $('bulkModal').classList.remove('on'); }
+  toast(`${add}건 추가${dup?` · 중복 ${dup}건 건너뜀`:''}${bad.length?` · 실패 ${bad.length}줄`:''}`);
+};
+
+/* ====== 백업 ====== */
+$('expBtn').onclick = async ()=>{
+  const data = JSON.stringify({app:'cycle-tracker', version:1, exported:new Date().toISOString(), records}, null, 1);
+  const name = `cycle-backup-${iso(todayDN())}.json`;
+  const file = new File([data], name, {type:'application/json'});
+  try {
+    if (navigator.canShare && navigator.canShare({files:[file]})) { await navigator.share({files:[file], title:name}); return; }
+  } catch(e){ if (e.name==='AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 2000); toast('백업 파일을 저장했습니다');
+};
+$('impBtn').onclick = ()=> $('impFile').click();
+$('impFile').onchange = async e=>{
+  const f = e.target.files[0]; e.target.value=''; if(!f) return;
+  try {
+    const o = JSON.parse(await f.text()); const inc = (o.records||[]).filter(validRec);
+    if (!inc.length){ toast('불러올 기록이 없습니다'); return; }
+    const replace = records.length && confirm(`백업 ${inc.length}건을 불러옵니다.\n\n[확인] 기존 기록을 모두 지우고 교체\n[취소] 기존 기록과 합치기(같은 시작일은 백업으로 갱신)`);
+    if (replace) records = [];
+    inc.forEach(r=>{ const x = {id:r.id||uid(), start:r.start, end:r.end||'', memo:(r.memo||'').slice(0,300)};
+      const i = records.findIndex(y=>y.start===x.start); if(i>=0) records[i]={...x,id:records[i].id}; else records.push(x); });
+    commit(); toast(`${inc.length}건 불러왔습니다`);
+  } catch(err){ toast('파일을 읽을 수 없습니다'); }
+};
+
+/* ====== 공통 ====== */
+let tt;
+function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('on'),2200); }
+function renderAll(){ analyze(); renderHero(); renderList(); trend.view=null; tl.view=null; trend.hideTip(); tl.hideTip(); trend.draw(); tl.draw(); }
+function commit(){ sortRecs(); save(); renderAll(); }
+
+load(); resetForm(); renderAll();
+// 날짜가 바뀐 뒤 앱을 다시 열면 갱신
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && A && A.t!==todayDN()){ resetForm(); renderAll(); } });
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
