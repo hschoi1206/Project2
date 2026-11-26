@@ -1,0 +1,371 @@
+{
+  "meta": {
+    "source_file": "sample_report_2026-09.xlsx",
+    "report_month": "2026-09",
+    "generated_at": "2026-10-01T15:00:46"
+  },
+  "site": {
+    "보고월": "2026-09",
+    "현장명": "가상 물류센터 신축공사",
+    "발주처": "가상개발(주)",
+    "위치": "경기도 OO시 OO동",
+    "공사기간_시작": "2025-03-01",
+    "공사기간_종료": "2027-02-28",
+    "계약금액_억원": 1250,
+    "실행예산_억원": 1120.0,
+    "현장소장": "홍길동",
+    "주요공종": "철골조, 지하2층/지상5층, 연면적 85,000㎡"
+  },
+  "progress": {
+    "latest": {
+      "month": "2026-09",
+      "plan": 75.0,
+      "actual": 70.2,
+      "gap": -4.8
+    },
+    "history": [
+      {
+        "month": "2025-03",
+        "plan": 1.0,
+        "actual": 1.0
+      },
+      {
+        "month": "2025-04",
+        "plan": 2.5,
+        "actual": 2.3
+      },
+      {
+        "month": "2025-05",
+        "plan": 4.5,
+        "actual": 4.0
+      },
+      {
+        "month": "2025-06",
+        "plan": 7.0,
+        "actual": 6.2
+      },
+      {
+        "month": "2025-07",
+        "plan": 10.0,
+        "actual": 9.1
+      },
+      {
+        "month": "2025-08",
+        "plan": 13.5,
+        "actual": 12.0
+      },
+      {
+        "month": "2025-09",
+        "plan": 17.5,
+        "actual": 15.8
+      },
+      {
+        "month": "2025-10",
+        "plan": 22.0,
+        "actual": 20.4
+      },
+      {
+        "month": "2025-11",
+        "plan": 27.0,
+        "actual": 25.1
+      },
+      {
+        "month": "2025-12",
+        "plan": 32.0,
+        "actual": 29.5
+      },
+      {
+        "month": "2026-01",
+        "plan": 36.5,
+        "actual": 33.0
+      },
+      {
+        "month": "2026-02",
+        "plan": 41.0,
+        "actual": 37.2
+      },
+      {
+        "month": "2026-03",
+        "plan": 46.0,
+        "actual": 42.5
+      },
+      {
+        "month": "2026-04",
+        "plan": 51.5,
+        "actual": 48.0
+      },
+      {
+        "month": "2026-05",
+        "plan": 57.0,
+        "actual": 53.6
+      },
+      {
+        "month": "2026-06",
+        "plan": 62.0,
+        "actual": 58.1
+      },
+      {
+        "month": "2026-07",
+        "plan": 66.5,
+        "actual": 62.0
+      },
+      {
+        "month": "2026-08",
+        "plan": 71.0,
+        "actual": 66.3
+      },
+      {
+        "month": "2026-09",
+        "plan": 75.0,
+        "actual": 70.2
+      }
+    ]
+  },
+  "budget": {
+    "total": 1120.0,
+    "latest": {
+      "month": "2026-09",
+      "plan": 820.0,
+      "actual": 858.0,
+      "gap": 38.0,
+      "plan_rate": 73.2,
+      "actual_rate": 76.6
+    },
+    "history": [
+      {
+        "month": "2025-03",
+        "plan": 15.0,
+        "actual": 14.0
+      },
+      {
+        "month": "2025-04",
+        "plan": 32.0,
+        "actual": 30.0
+      },
+      {
+        "month": "2025-05",
+        "plan": 55.0,
+        "actual": 52.0
+      },
+      {
+        "month": "2025-06",
+        "plan": 82.0,
+        "actual": 80.0
+      },
+      {
+        "month": "2025-07",
+        "plan": 115.0,
+        "actual": 113.0
+      },
+      {
+        "month": "2025-08",
+        "plan": 152.0,
+        "actual": 150.0
+      },
+      {
+        "month": "2025-09",
+        "plan": 195.0,
+        "actual": 196.0
+      },
+      {
+        "month": "2025-10",
+        "plan": 243.0,
+        "actual": 247.0
+      },
+      {
+        "month": "2025-11",
+        "plan": 296.0,
+        "actual": 302.0
+      },
+      {
+        "month": "2025-12",
+        "plan": 350.0,
+        "actual": 360.0
+      },
+      {
+        "month": "2026-01",
+        "plan": 398.0,
+        "actual": 410.0
+      },
+      {
+        "month": "2026-02",
+        "plan": 446.0,
+        "actual": 461.0
+      },
+      {
+        "month": "2026-03",
+        "plan": 502.0,
+        "actual": 520.0
+      },
+      {
+        "month": "2026-04",
+        "plan": 562.0,
+        "actual": 583.0
+      },
+      {
+        "month": "2026-05",
+        "plan": 623.0,
+        "actual": 648.0
+      },
+      {
+        "month": "2026-06",
+        "plan": 679.0,
+        "actual": 707.0
+      },
+      {
+        "month": "2026-07",
+        "plan": 728.0,
+        "actual": 760.0
+      },
+      {
+        "month": "2026-08",
+        "plan": 777.0,
+        "actual": 812.0
+      },
+      {
+        "month": "2026-09",
+        "plan": 820.0,
+        "actual": 858.0
+      }
+    ]
+  },
+  "risks": {
+    "summary": {
+      "total": 8,
+      "open": 5,
+      "overdue": 1,
+      "by_status": {
+        "미착수": 2,
+        "진행중": 3,
+        "완료": 3
+      },
+      "open_by_grade": {
+        "High": 3,
+        "Medium": 2,
+        "Low": 0
+      }
+    },
+    "items": [
+      {
+        "id": "R-01",
+        "title": "철골 자재 단가 상승",
+        "category": "원가",
+        "impact": "상",
+        "likelihood": "상",
+        "grade": "High",
+        "owner": "김공무",
+        "registered": "2025-11-03",
+        "action": "대체 공급사 견적 확보 및 선발주 검토",
+        "status": "진행중",
+        "due": "2026-10-31",
+        "overdue": false,
+        "note": null
+      },
+      {
+        "id": "R-02",
+        "title": "인근 주민 소음 민원",
+        "category": "민원",
+        "impact": "중",
+        "likelihood": "상",
+        "grade": "High",
+        "owner": "이공사",
+        "registered": "2026-01-12",
+        "action": "방음벽 보강, 야간작업 제한",
+        "status": "진행중",
+        "due": "2026-09-15",
+        "overdue": true,
+        "note": "9월 민원 3건"
+      },
+      {
+        "id": "R-03",
+        "title": "우기 토공사 지연",
+        "category": "공정",
+        "impact": "상",
+        "likelihood": "중",
+        "grade": "High",
+        "owner": "박공정",
+        "registered": "2026-05-20",
+        "action": "배수 계획 수립, 작업 순서 조정",
+        "status": "완료",
+        "due": "2026-08-31",
+        "overdue": false,
+        "note": null
+      },
+      {
+        "id": "R-04",
+        "title": "타워크레인 충돌 위험",
+        "category": "안전",
+        "impact": "상",
+        "likelihood": "하",
+        "grade": "Medium",
+        "owner": "최안전",
+        "registered": "2025-06-02",
+        "action": "충돌방지장치 설치, 신호수 배치",
+        "status": "완료",
+        "due": "2025-07-15",
+        "overdue": false,
+        "note": null
+      },
+      {
+        "id": "R-05",
+        "title": "설계변경(물류 동선) 요청",
+        "category": "공정",
+        "impact": "상",
+        "likelihood": "상",
+        "grade": "High",
+        "owner": "김공무",
+        "registered": "2026-08-18",
+        "action": "발주처 협의 및 변경 범위 확정",
+        "status": "미착수",
+        "due": "2026-11-30",
+        "overdue": false,
+        "note": "발주처 회신 대기"
+      },
+      {
+        "id": "R-06",
+        "title": "외벽 패널 품질 불량",
+        "category": "품질",
+        "impact": "중",
+        "likelihood": "중",
+        "grade": "Medium",
+        "owner": "정품질",
+        "registered": "2026-07-07",
+        "action": "제작사 공장 검수 강화",
+        "status": "진행중",
+        "due": "2026-10-15",
+        "overdue": false,
+        "note": null
+      },
+      {
+        "id": "R-07",
+        "title": "전기 인입 일정 지연",
+        "category": "공정",
+        "impact": "중",
+        "likelihood": "중",
+        "grade": "Medium",
+        "owner": "박공정",
+        "registered": "2026-09-02",
+        "action": "한전 협의 일정 확정",
+        "status": "미착수",
+        "due": "2026-12-31",
+        "overdue": false,
+        "note": null
+      },
+      {
+        "id": "R-08",
+        "title": "하도급사 인력 수급 불안",
+        "category": "공정",
+        "impact": "중",
+        "likelihood": "하",
+        "grade": "Low",
+        "owner": "이공사",
+        "registered": "2026-04-10",
+        "action": "예비 협력사 Pool 확보",
+        "status": "완료",
+        "due": "2026-06-30",
+        "overdue": false,
+        "note": null
+      }
+    ]
+  }
+}
