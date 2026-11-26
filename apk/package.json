@@ -1,0 +1,18 @@
+{
+  "name": "cycle-tracker-apk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "주기 기록 앱을 안드로이드 APK로 감싸는 Capacitor 프로젝트",
+  "scripts": {
+    "copy-web": "rm -rf www && mkdir -p www && cp -r ../cycle/index.html ../cycle/manifest.json ../cycle/icons www/"
+  },
+  "dependencies": {
+    "@capacitor/android": "7.6.11",
+    "@capacitor/core": "7.6.11",
+    "@capacitor/filesystem": "7.1.9",
+    "@capacitor/share": "7.0.4"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "7.6.11"
+  }
+}

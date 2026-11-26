@@ -1,0 +1,9 @@
+{
+  "appId": "io.github.hschoi1206.cycle",
+  "appName": "주기 기록",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#f5f8fc",
+    "adjustMarginsForEdgeToEdge": "auto"
+  }
+}
